@@ -7,8 +7,9 @@ ulimit -c 0
 
 MALLOC_MIN=0
 MALLOC_MAX=1000
+MALLOC_INC=1
 
-for ((i = MALLOC_MIN; i < MALLOC_MAX; i++)); do
+for ((i = MALLOC_MIN; i < MALLOC_MAX; i += MALLOC_INC)); do
    LD_PRELOAD=build/libtest_malloc_fail.so MALLOC_FAIL_AT=$i "$@" 
    if [[ $? -eq 139 ]]; then
        echo "Command '$*' failed with MALLOC_FAIL_AT=$i"
