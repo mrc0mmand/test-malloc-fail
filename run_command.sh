@@ -3,6 +3,8 @@
 set -u
 set -o pipefail
 
+ulimit -c 0
+
 MALLOC_MIN=0
 MALLOC_MAX=1000
 
