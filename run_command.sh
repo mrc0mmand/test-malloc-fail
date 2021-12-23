@@ -38,10 +38,11 @@ ALLOC_FAIL_AT="${ALLOC_FUN^^}_FAIL_AT"
 
 for ((i = ALLOC_MIN; i < ALLOC_MAX; i += ALLOC_STEP)); do
     declare -x "$ALLOC_FAIL_AT=$i"
-    LD_PRELOAD=build/libtest_malloc_fail.so "$@"
+    # TODO: don't harcode the build directory
+    LD_PRELOAD="$PWD/build/libtest_malloc_fail.so" "$@"
     if [[ $? -eq 139 ]]; then
         echo "Command '$*' failed with $ALLOC_FAIL_AT=$i"
-        echo "Reproducer: $ALLOC_FAIL_AT=$i LD_PRELOAD=build/libtest_malloc_fail.so $*"
+        echo "Reproducer: $ALLOC_FAIL_AT=$i LD_PRELOAD=$PWD/build/libtest_malloc_fail.so $*"
         exit 1
     fi
 done
