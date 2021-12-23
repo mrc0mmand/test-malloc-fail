@@ -27,7 +27,7 @@ while getopts "f:h:l:s:" opt; do
             ALLOC_STEP="$OPTARG"
             ;;
         *)
-            echo >&2 "Usage: $0 [-l ALLOC_MIN] [-h MALLOC_HIGH] [-s ALLOC_STEP]"
+            echo >&2 "Usage: $0 [-l ALLOC_MIN] [-h ALLOC_MAX] [-s ALLOC_STEP]"
             exit 1
     esac
 done
