@@ -5,33 +5,42 @@ set -o pipefail
 
 ulimit -c 0
 
-MALLOC_MIN=0
-MALLOC_MAX=1000
-MALLOC_STEP=1
+# TODO: logging & continue after segv
 
-while getopts "l:h:s:" opt; do
+ALLOC_MIN=0
+ALLOC_MAX=1000
+ALLOC_STEP=1
+ALLOC_FUN=malloc
+
+while getopts "f:h:l:s:" opt; do
     case "$opt" in
-        l)
-            MALLOC_MIN="$OPTARG"
+        f)
+            ALLOC_FUN="$OPTARG"
             ;;
         h)
-            MALLOC_MAX="$OPTARG"
+            ALLOC_MAX="$OPTARG"
+            ;;
+        l)
+            ALLOC_MIN="$OPTARG"
             ;;
         s)
-            MALLOC_STEP="$OPTARG"
+            ALLOC_STEP="$OPTARG"
             ;;
         *)
-            echo >&2 "Usage: $0 [-l MALLOC_MIN] [-h MALLOC_HIGH] [-s MALLOC_STEP]"
+            echo >&2 "Usage: $0 [-l ALLOC_MIN] [-h MALLOC_HIGH] [-s ALLOC_STEP]"
             exit 1
     esac
 done
 
 shift $((OPTIND - 1))
 
-for ((i = MALLOC_MIN; i < MALLOC_MAX; i += MALLOC_STEP)); do
-   LD_PRELOAD=build/libtest_malloc_fail.so MALLOC_FAIL_AT=$i "$@" 
-   if [[ $? -eq 139 ]]; then
-       echo "Command '$*' failed with MALLOC_FAIL_AT=$i"
-       exit 1
-   fi
+ALLOC_FAIL_AT="${ALLOC_FUN^^}_FAIL_AT"
+
+for ((i = ALLOC_MIN; i < ALLOC_MAX; i += ALLOC_STEP)); do
+    declare -x "$ALLOC_FAIL_AT=$i"
+    LD_PRELOAD=build/libtest_malloc_fail.so "$@"
+    if [[ $? -eq 139 ]]; then
+        echo "Command '$*' failed with MALLOC_FAIL_AT=$i"
+        exit 1
+    fi
 done
