@@ -20,8 +20,13 @@ void *malloc(size_t size)
     if (env_malloc_fail_at)
         malloc_fail_at = atol(env_malloc_fail_at);
 
-    if(!real_malloc)
+    if(!real_malloc) {
+        /* An ugly way to avoid recursion in case dlsym() uses the function
+         * we're trying to get */
+        extern void *__libc_malloc(size_t);
+        real_malloc = __libc_malloc;
         real_malloc = (typeof(real_malloc)) dlsym(RTLD_NEXT, "malloc");
+    }
 
     if(malloc_fail_at >= 0 && malloc_counter++ >= malloc_fail_at)
         return real_malloc(-1);
@@ -40,8 +45,13 @@ void *calloc(size_t nmemb, size_t size)
     if (env_calloc_fail_at)
         calloc_fail_at = atol(env_calloc_fail_at);
 
-    if(!real_calloc)
+    if(!real_calloc) {
+        /* An ugly way to avoid recursion in case dlsym() uses the function
+         * we're trying to get */
+        extern void *__libc_calloc(size_t,size_t);
+        real_calloc = __libc_calloc;
         real_calloc = (typeof(real_calloc)) dlsym(RTLD_NEXT, "calloc");
+    }
 
     if(calloc_fail_at >= 0 && calloc_counter++ >= calloc_fail_at)
         return real_calloc(nmemb, -1);
